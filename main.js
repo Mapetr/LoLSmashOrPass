@@ -16,10 +16,6 @@ let totalCounter = document.getElementById('totalcounter');
 let smashCounter = document.getElementById('smashcounter');
 let passCounter = document.getElementById('passcounter');
 
-let fbisound = new Audio('audio/fbi.mp3');
-let illegalsound = new Audio('audio/illegal.mp3');
-let tadasound = new Audio('audio/tada.mp3');
-
 function init(){
     getChampionList().then(result => {
         champList = result;
@@ -37,15 +33,15 @@ function pickRandomChampion(){
 
     try{
         championName.innerText = champion.name;
-        championImage.src = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champion.img}.jpg`;
+        championImage.src = `https://league.cdn.0016.cz/img/champion/splash/${champion.img}.jpg`;
     }catch (e){
         document.getElementById('smashbutton').remove();
         document.getElementById('passbutton').remove();
         championName.innerText = smashList.length > passList.length ? 'Now go touch some grass' : 'gg';
         championImage.src = 'https://c.tenor.com/bOcoT4nn3noAAAAd/alistar-league-of-legends.gif';
-        tadasound.play();
     }
-    totalCounter.innerText = champList.length + ' remain';
+    const total = champList.length + smashList.length + passList.length;
+    totalCounter.innerText = `${champList.length} / ${total} remain`;
     smashCounter.innerText = smashList.length;
     passCounter.innerText = passList.length;
 }
@@ -57,12 +53,6 @@ function smash(){
     smashListElem.innerHTML = smashListStr;
     datasaved = false;
     pickRandomChampion();
-
-    // added this to agitate people who need to touch some grass
-    if (champion.name.toLowerCase().includes('annie') || champion.name.toLowerCase().includes('zoe')){
-        if (Math.random() < 0.8) fbisound.play();
-        else illegalsound.play();
-    }
 }
 
 function pass(){
@@ -154,17 +144,18 @@ function download(filename, text) {
 
 async function getChampionList() {
     // get latest data from riot api
-    const version = (await (await fetch('https://ddragon.leagueoflegends.com/api/versions.json')).json())[0];       // latest version
-    const champions = (await (await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/${language}/championFull.json`)).json()).data;          // champion list
+    const version = await (await fetch('https://league.cdn.0016.cz/latest')).text();       // latest version
+    const champions = (await (await fetch(`https://league.cdn.0016.cz/${version}/data/${language}/championFull.json`)).json()).data;          // champion list
 
     // todo: add languages support
-    // const languages = await (await fetch('https://ddragon.leagueoflegends.com/cdn/languages.json')).json();
+    // const languages = await (await fetch(`https://league.cdn.0016.cz/languages.json`)).json();
 
     // create champion list
     Object.keys(champions).forEach(key => {
         const champion = champions[key];
         Object.keys(champion.skins).forEach(key => {
             const skin = champion.skins[key];
+            if (skin.parentSkin !== undefined) return;
             champList.push({
                 'id' : skin.id,
                 'name' : skin.name === 'default' ? champion.name : skin.name,
