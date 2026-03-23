@@ -33,7 +33,7 @@ function pickRandomChampion(){
 
     try{
         championName.innerText = champion.name;
-        championImage.src = `https://league.cdn.0016.cz/img/champion/splash/${champion.img}.jpg`;
+        championImage.src = `https://league.cdn.0016.cz/img/champion/centered/${champion.img}.jpg`;
     }catch (e){
         document.getElementById('smashbutton').remove();
         document.getElementById('passbutton').remove();
